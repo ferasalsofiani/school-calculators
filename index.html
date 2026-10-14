@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Theme Calculator Project</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Global App Shell */
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.4s ease;
+        }
+
+        /* Theme Switcher Bar */
+        .switcher {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .switch-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+            transition: 0.2s;
+        }
+        .switch-btn.active {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Calculator Containers */
+        .calc-container { display: none; width: 320px; }
+        .calc-container.active { display: block; }
+
+        /* 1. Glassmorphism Theme */
+        body.theme-glass { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .calc-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .calc-glass input { width: 100%; height: 70px; background: rgba(0, 0, 0, 0.2); border: none; border-radius: 12px; color: #fff; font-size: 2rem; text-align: right; padding: 0 15px; margin-bottom: 20px; }
+        .calc-glass .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .calc-glass button { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); padding: 18px; font-size: 1.2rem; color: #fff; border-radius: 12px; cursor: pointer; }
+        .calc-glass button:hover { background: rgba(255, 255, 255, 0.3); }
+        .calc-glass .op { background: rgba(255, 140, 0, 0.4); }
+        .calc-glass .eq { background: rgba(0, 200, 100, 0.4); grid-column: span 2; }
+        .calc-glass .cl { background: rgba(255, 50, 50, 0.4); }
+
+        /* 2. Cyberpunk Theme */
+        body.theme-cyber { background-color: #0b0c10; font-family: 'Courier New', Courier, monospace; }
+        .calc-cyber {
+            background: #1f2833;
+            border: 2px solid #66fcf1;
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.4);
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .calc-cyber .title { color: #66fcf1; font-size: 0.85rem; margin-bottom: 10px; letter-spacing: 2px; }
+        .calc-cyber input { width: 100%; height: 60px; background: #0b0c10; border: 1px solid #45a29e; color: #66fcf1; font-size: 1.8rem; text-align: right; padding: 0 10px; margin-bottom: 15px; }
+        .calc-cyber .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .calc-cyber button { background: #0b0c10; border: 1px solid #45a29e; padding: 15px; font-size: 1.1rem; color: #c5c6c7; cursor: pointer; }
+        .calc-cyber button:hover { background: #66fcf1; color: #0b0c10; }
+        .calc-cyber .op { color: #66fcf1; border-color: #66fcf1; }
+        .calc-cyber .eq { background: #45a29e; color: #0b0c10; font-weight: bold; grid-column: span 2; }
+        .calc-cyber .cl { color: #ff5555; border-color: #ff5555; }
+
+        /* 3. Pastel Theme */
+        body.theme-pastel { background-color: #fceade; }
+        .calc-pastel {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(214, 184, 168, 0.3);
+        }
+        .calc-pastel input { width: 100%; height: 65px; background: #f7f3f0; border: none; border-radius: 15px; color: #55433c; font-size: 1.8rem; text-align: right; padding: 0 20px; margin-bottom: 20px; }
+        .calc-pastel .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .calc-pastel button { background: #f4eae1; border: none; padding: 16px; font-size: 1.1rem; color: #6b5247; border-radius: 14px; cursor: pointer; }
+        .calc-pastel button:hover { background: #ebdcd0; }
+        .calc-pastel .op { background: #ffd8be; color: #8c5332; }
+        .calc-pastel .eq { background: #b5e2fa; color: #2c688c; grid-column: span 2; }
+        .calc-pastel .cl { background: #ffccd5; color: #9c3f4e; }
+    </style>
+</head>
+<body class="theme-glass">
+
+    <!-- Theme Switcher Navigation -->
+    <div class="switcher">
+        <button class="switch-btn active" onclick="switchCalc('glass')">Glassmorphism</button>
+        <button class="switch-btn" onclick="switchCalc('cyber')">Cyberpunk</button>
+        <button class="switch-btn" onclick="switchCalc('pastel')">Pastel</button>
+    </div>
+
+    <!-- 1. Glass Calculator -->
+    <div id="calc-glass" class="calc-container active">
+        <div class="calc-glass">
+            <input type="text" id="display-glass" readonly value="0">
+            <div class="buttons">
+                <button class="cl" onclick="clearCalc('glass')">C</button>
+                <button onclick="appendValue('glass', '(')">(</button>
+                <button onclick="appendValue('glass', ')')">)</button>
+                <button class="op" onclick="appendValue('glass', '/')">/</button>
+                <button onclick="appendValue('glass', '7')">7</button>
+                <button onclick="appendValue('glass', '8')">8</button>
+                <button onclick="appendValue('glass', '9')">9</button>
+                <button class="op" onclick="appendValue('glass', '*')">*</button>
+                <button onclick="appendValue('glass', '4')">4</button>
+                <button onclick="appendValue('glass', '5')">5</button>
+                <button onclick="appendValue('glass', '6')">6</button>
+                <button class="op" onclick="appendValue('glass', '-')">-</button>
+                <button onclick="appendValue('glass', '1')">1</button>
+                <button onclick="appendValue('glass', '2')">2</button>
+                <button onclick="appendValue('glass', '3')">3</button>
+                <button class="op" onclick="appendValue('glass', '+')">+</button>
+                <button onclick="appendValue('glass', '0')">0</button>
+                <button onclick="appendValue('glass', '.')">.</button>
+                <button class="eq" onclick="calculate('glass')">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Cyber Calculator -->
+    <div id="calc-cyber" class="calc-container">
+        <div class="calc-cyber">
+            <div class="title">// MULTI_CALC v3.0</div>
+            <input type="text" id="display-cyber" readonly value="0">
+            <div class="buttons">
+                <button class="cl" onclick="clearCalc('cyber')">CLS</button>
+                <button onclick="appendValue('cyber', '(')">[</button>
+                <button onclick="appendValue('cyber', ')')">]</button>
+                <button class="op" onclick="appendValue('cyber', '/')">÷</button>
+                <button onclick="appendValue('cyber', '7')">7</button>
+                <button onclick="appendValue('cyber', '8')">8</button>
+                <button onclick="appendValue('cyber', '9')">9</button>
+                <button class="op" onclick="appendValue('cyber', '*')">×</button>
+                <button onclick="appendValue('cyber', '4')">4</button>
+                <button onclick="appendValue('cyber', '5')">5</button>
+                <button onclick="appendValue('cyber', '6')">6</button>
+                <button class="op" onclick="appendValue('cyber', '-')">-</button>
+                <button onclick="appendValue('cyber', '1')">1</button>
+                <button onclick="appendValue('cyber', '2')">2</button>
+                <button onclick="appendValue('cyber', '3')">3</button>
+                <button class="op" onclick="appendValue('cyber', '+')">+</button>
+                <button onclick="appendValue('cyber', '0')">0</button>
+                <button onclick="appendValue('cyber', '.')">.</button>
+                <button class="eq" onclick="calculate('cyber')">EXEC</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Pastel Calculator -->
+    <div id="calc-pastel" class="calc-container">
+        <div class="calc-pastel">
+            <input type="text" id="display-pastel" readonly value="0">
+            <div class="buttons">
+                <button class="cl" onclick="clearCalc('pastel')">AC</button>
+                <button onclick="appendValue('pastel', '(')">(</button>
+                <button onclick="appendValue('pastel', ')')">)</button>
+                <button class="op" onclick="appendValue('pastel', '/')">÷</button>
+                <button onclick="appendValue('pastel', '7')">7</button>
+                <button onclick="appendValue('pastel', '8')">8</button>
+                <button onclick="appendValue('pastel', '9')">9</button>
+                <button class="op" onclick="appendValue('pastel', '*')">×</button>
+                <button onclick="appendValue('pastel', '4')">4</button>
+                <button onclick="appendValue('pastel', '5')">5</button>
+                <button onclick="appendValue('pastel', '6')">6</button>
+                <button class="op" onclick="appendValue('pastel', '-')">-</button>
+                <button onclick="appendValue('pastel', '1')">1</button>
+                <button onclick="appendValue('pastel', '2')">2</button>
+                <button onclick="appendValue('pastel', '3')">3</button>
+                <button class="op" onclick="appendValue('pastel', '+')">+</button>
+                <button onclick="appendValue('pastel', '0')">0</button>
+                <button onclick="appendValue('pastel', '.')">.</button>
+                <button class="eq" onclick="calculate('pastel')">=</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchCalc(type) {
+            document.querySelectorAll('.calc-container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('calc-' + type).classList.add('active');
+            event.target.classList.add('active');
+            
+            document.body.className = 'theme-' + type;
+        }
+
+        function appendValue(type, val) {
+            const display = document.getElementById('display-' + type);
+            if (display.value === '0' || display.value === 'Error' || display.value === 'ERR') display.value = '';
+            display.value += val;
+        }
+
+        function clearCalc(type) {
+            document.getElementById('display-' + type).value = '0';
+        }
+
+        function calculate(type) {
+            const display = document.getElementById('display-' + type);
+            try {
+                let expr = display.value.replace(/×/g, '*').replace(/÷/g, '/');
+                display.value = eval(expr);
+            } catch {
+                display.value = (type === 'cyber') ? 'ERR' : 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
